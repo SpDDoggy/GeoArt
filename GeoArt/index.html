@@ -1,0 +1,1215 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GeoArt</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#165DFF',
+                        secondary: '#00B42A',
+                        accent: '#FF7D00',
+                        dark: '#1D2129',
+                        light: '#F8F9FA', /* 更亮的背景色 */
+                        'light-alt': '#F2F3F5', /* 用于区块背景 */
+                        'gray-text': '#5F6775' /* 更柔和的文本颜色 */
+                    },
+                    fontFamily: {
+                        inter: ['Inter', 'sans-serif'],
+                    },
+                    boxShadow: {
+                        'custom-light': '0 4px 15px rgba(0, 0, 0, 0.05)', /* 更柔和的阴影 */
+                        'custom-hover': '0 8px 25px rgba(0, 0, 0, 0.1)'
+                    },
+                    borderRadius: {
+                        'xl': '1rem', /* 稍微更大的圆角 */
+                        '2xl': '1.5rem'
+                    }
+                }
+            }
+        }
+    </script>
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .text-shadow {
+                text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            }
+            .transition-transform-opacity {
+                transition-property: transform, opacity;
+            }
+            .scrollbar-hide::-webkit-scrollbar {
+                display: none;
+            }
+            .scrollbar-hide {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+            }
+            /* 自定义渐变背景用于 hero section */
+            .hero-gradient {
+                background: linear-gradient(135deg, var(--tw-colors-primary) 0%, #3a7dff 100%);
+            }
+            /* 波浪分隔符动画 */
+            @keyframes wave {
+                0% { transform: translateX(0); }
+                50% { transform: translateX(-1%); }
+                100% { transform: translateX(0); }
+            }
+            .wave-separator path {
+                animation: wave 10s ease-in-out infinite alternate;
+            }
+        }
+    </style>
+</head>
+<body class="font-inter bg-light text-dark min-h-screen flex flex-col antialiased">
+    <!-- 导航栏 -->
+    <header id="navbar" class="fixed w-full top-0 z-50 transition-all duration-300 bg-white/95 backdrop-blur-sm shadow-custom-light">
+        <div class="container mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="#" class="flex items-center space-x-3">
+                <div class="w-11 h-11 rounded-full bg-primary flex items-center justify-center shadow-md">
+                    <i class="fa fa-map-o text-white text-2xl"></i> <!-- 更具GeoArt感的图标 -->
+                </div>
+                <span class="text-2xl font-bold text-dark tracking-tight">GeoArt Blog</span> <!-- 个人博客名称 -->
+            </a>
+            
+            <!-- 桌面导航 -->
+            <nav class="hidden md:flex items-center space-x-10">
+                <a href="#home" class="font-medium text-gray-700 hover:text-primary transition-colors text-lg">首页</a>
+                <a href="#about" class="font-medium text-gray-700 hover:text-primary transition-colors text-lg">关于我</a>
+                <a href="#projects" class="font-medium text-gray-700 hover:text-primary transition-colors text-lg">我的作品</a>
+                <a href="#tech" class="font-medium text-gray-700 hover:text-primary transition-colors text-lg">技术分享</a>
+                <a href="#contact" class="font-medium text-gray-700 hover:text-primary transition-colors text-lg">联系我</a>
+            </nav>
+            
+            <!-- 移动端菜单按钮 -->
+            <button id="menu-toggle" class="md:hidden text-dark focus:outline-none p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                <i class="fa fa-bars text-2xl"></i>
+            </button>
+        </div>
+        
+        <!-- 移动端导航菜单 -->
+        <div id="mobile-menu" class="md:hidden hidden bg-white border-t border-gray-100 shadow-lg pb-4">
+            <div class="container mx-auto px-4 py-3 flex flex-col space-y-3">
+                <a href="#home" class="font-medium text-dark hover:text-primary py-2 transition-colors text-base">首页</a>
+                <a href="#about" class="font-medium text-dark hover:text-primary py-2 transition-colors text-base">关于我</a>
+                <a href="#projects" class="font-medium text-dark hover:text-primary py-2 transition-colors text-base">我的作品</a>
+                <a href="#tech" class="font-medium text-dark hover:text-primary py-2 transition-colors text-base">技术分享</a>
+                <a href="#contact" class="font-medium text-dark hover:text-primary py-2 transition-colors text-base">联系我</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主内容区 -->
+    <main class="flex-grow pt-[5.5rem]"> <!-- 适应导航栏高度 -->
+        <!-- 英雄区域 -->
+        <section id="home" class="relative hero-gradient py-24 md:py-36 overflow-hidden text-white">
+            <div class="absolute inset-0 opacity-10">
+                <!-- 背景几何图形或网格 -->
+                <svg viewBox="0 0 100 100" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                    <path d="M0,0 L100,0 L100,100 L0,100 Z" fill="url(#diagonal-grid)" />
+                    <defs>
+                        <pattern id="diagonal-grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                            <path d="M 0 10 L 10 0 L 20 0 L 10 20 L 0 20 Z" fill="none" stroke="#fff" stroke-width="0.3" />
+                        </pattern>
+                    </defs>
+                </svg>
+            </div>
+            <div class="container mx-auto px-4 relative z-10">
+                <div class="max-w-4xl mx-auto text-center">
+                    <h1 class="text-[clamp(2.8rem,5vw,4.5rem)] font-extrabold leading-tight mb-8 text-shadow">
+                        数据之美，地理之诗
+                    </h1>
+                    <p class="text-[clamp(1.1rem,2vw,1.4rem)] text-white/90 mb-12 max-w-2xl mx-auto leading-relaxed">
+                        探索地理信息世界，用代码与艺术融合，绘制地球的独特故事。
+                    </p>
+                    <div class="flex flex-col sm:flex-row justify-center gap-5">
+                        <a href="#projects" class="px-10 py-4 bg-white text-primary font-bold rounded-xl shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all duration-300 text-lg">
+                            我的作品集
+                        </a>
+                        <a href="#tech" class="px-10 py-4 bg-transparent border-2 border-white text-white font-bold rounded-xl hover:bg-white/10 transition-all duration-300 text-lg">
+                            技术博客
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <!-- 波浪分隔符 -->
+            <div class="absolute bottom-0 left-0 right-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 100" class="w-full wave-separator">
+                    <path fill="#F8F9FA" fill-opacity="1" d="M0,64L48,69.3C96,75,192,85,288,85.3C384,85,480,75,576,69.3C672,64,768,64,864,69.3C960,75,1056,85,1152,85.3C1248,85,1344,75,1392,69.3L1440,64L1440,100L1392,100C1344,100,1248,100,1152,100C1056,100,960,100,864,100C768,100,672,100,576,100C480,100,384,100,288,100C192,100,96,100,48,100L0,100Z"></path>
+                </svg>
+            </div>
+        </section>
+
+        <!-- 关于我 -->
+        <section id="about" class="py-20 bg-light">
+            <div class="container mx-auto px-4">
+                <div class="max-w-5xl mx-auto grid md:grid-cols-2 gap-12 items-center">
+                    <div class="md:order-2">
+                        <img src="https://placehold.co/600x400/D0E0F0/000000?text=Your+Profile+Image" alt="个人简介图片" class="rounded-2xl shadow-custom-hover transform hover:scale-105 transition-transform duration-300">
+                    </div>
+                    <div class="md:order-1">
+                        <h2 class="text-[clamp(1.8rem,3vw,2.8rem)] font-bold text-dark mb-6 leading-tight">
+                            我是谁？我的<br><span class="text-primary">地理艺术</span>之旅
+                        </h2>
+                        <p class="text-gray-text text-lg mb-6 leading-relaxed">
+                            我是一名地理信息系统（GIS）领域的开发者与爱好者，致力于将复杂枯燥的地理数据转化为直观、富有美感的视觉作品。这个博客是我分享我的地理艺术之旅的平台，在这里，你将看到我如何用代码和数据讲述地球的故事。
+                        </p>
+                        <ul class="space-y-3 text-gray-text text-base mb-8">
+                            <li class="flex items-center"><i class="fa fa-check-circle text-primary mr-3 text-xl"></i>热衷于地理数据可视化与制图</li>
+                            <li class="flex items-center"><i class="fa fa-check-circle text-primary mr-3 text-xl"></i>精通Python、JavaScript等数据处理与前端技术</li>
+                            <li class="flex items-center"><i class="fa fa-check-circle text-primary mr-3 text-xl"></i>专注于AI与地理信息的交叉应用探索</li>
+                        </ul>
+                        <a href="#contact" class="inline-flex items-center px-8 py-3 bg-primary text-white font-semibold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300">
+                            与我联系 <i class="fa fa-envelope-o ml-3"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 我的作品（项目展示） -->
+        <section id="projects" class="py-20 bg-light-alt">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.8rem)] font-bold text-dark mb-4">我的<span class="text-primary">地理作品集</span></h2>
+                    <p class="text-gray-text max-w-3xl mx-auto text-lg leading-relaxed">
+                        以下是我利用地理数据和编程技术创造的一些项目，每个项目都凝聚了我对地球的理解和艺术的追求。
+                    </p>
+                </div>
+                
+                <!-- 项目过滤器 -->
+                <div class="flex flex-wrap justify-center gap-4 mb-12">
+                    <button class="project-filter px-6 py-2.5 rounded-full bg-primary text-white font-medium text-base shadow-sm hover:shadow-md transition-all duration-200" data-filter="all">全部</button>
+                    <button class="project-filter px-6 py-2.5 rounded-full bg-white text-gray-700 font-medium text-base hover:bg-gray-100 hover:text-primary transition-colors duration-200 shadow-sm" data-filter="map">地图绘制</button>
+                    <button class="project-filter px-6 py-2.5 rounded-full bg-white text-gray-700 font-medium text-base hover:bg-gray-100 hover:text-primary transition-colors duration-200 shadow-sm" data-filter="analysis">数据分析</button>
+                    <button class="project-filter px-6 py-2.5 rounded-full bg-white text-gray-700 font-medium text-base hover:bg-gray-100 hover:text-primary transition-colors duration-200 shadow-sm" data-filter="3d">3D可视化</button>
+                </div>
+                
+                <!-- 项目网格 -->
+                <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-10">
+                    <!-- 项目卡片 1 -->
+                    <div class="project-card group bg-white rounded-2xl overflow-hidden shadow-custom-light hover:shadow-custom-hover transition-all duration-300 transform hover:-translate-y-2" data-category="map">
+                        <div class="relative h-60 overflow-hidden">
+                            <img src="https://placehold.co/600x400/4CAF50/FFFFFF?text=Population+Map" alt="中国人口密度分布图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                <div>
+                                    <h3 class="text-white text-xl font-semibold mb-2">中国人口密度分布图</h3>
+                                    <p class="text-white/80 text-sm">基于全国人口普查数据，分级色彩展现人口分布密度。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold text-dark">中国人口密度分布图</h3>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">地图绘制</span>
+                            </div>
+                            <p class="text-gray-text text-sm mb-4 leading-relaxed">深入分析第五次全国人口普查数据，制作出精细的中国人口密度专题地图，揭示人口分布的区域特征。</p>
+                            <a href="#" class="inline-flex items-center text-primary font-medium hover:underline text-base">
+                                了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目卡片 2 -->
+                    <div class="project-card group bg-white rounded-2xl overflow-hidden shadow-custom-light hover:shadow-custom-hover transition-all duration-300 transform hover:-translate-y-2" data-category="analysis">
+                        <div class="relative h-60 overflow-hidden">
+                            <img src="https://placehold.co/600x400/FFC107/FFFFFF?text=Climate+Change" alt="全球气候变化趋势图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                <div>
+                                    <h3 class="text-white text-xl font-semibold mb-2">全球气候变化趋势图</h3>
+                                    <p class="text-white/80 text-sm">基于近50年气象数据，可视化全球温度变化趋势。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold text-dark">全球气候变化趋势图</h3>
+                                <span class="px-3 py-1 bg-secondary/20 text-secondary text-xs rounded-full font-medium">数据分析</span>
+                            </div>
+                            <p class="text-gray-text text-sm mb-4 leading-relaxed">通过对长期气象数据的挖掘，展现全球变暖的清晰趋势及不同区域的响应，为气候研究提供直观视角。</p>
+                            <a href="#" class="inline-flex items-center text-primary font-medium hover:underline text-base">
+                                了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目卡片 3 -->
+                    <div class="project-card group bg-white rounded-2xl overflow-hidden shadow-custom-light hover:shadow-custom-hover transition-all duration-300 transform hover:-translate-y-2" data-category="3d">
+                        <div class="relative h-60 overflow-hidden">
+                            <img src="https://placehold.co/600x400/9C27B0/FFFFFF?text=3D+City" alt="城市3D地形模型" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                <div>
+                                    <h3 class="text-white text-xl font-semibold mb-2">城市3D地形模型</h3>
+                                    <p class="text-white/80 text-sm">基于LiDAR数据构建，用于城市规划与模拟。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold text-dark">城市3D地形模型</h3>
+                                <span class="px-3 py-1 bg-accent/20 text-accent text-xs rounded-full font-medium">3D可视化</span>
+                            </div>
+                            <p class="text-gray-text text-sm mb-4 leading-relaxed">利用高精度LiDAR点云数据，重建城市三维地形和建筑模型，为智能城市建设提供基础数据支持。</p>
+                            <a href="#" class="inline-flex items-center text-primary font-medium hover:underline text-base">
+                                了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- 项目卡片 4 -->
+                    <div class="project-card group bg-white rounded-2xl overflow-hidden shadow-custom-light hover:shadow-custom-hover transition-all duration-300 transform hover:-translate-y-2" data-category="analysis">
+                        <div class="relative h-60 overflow-hidden">
+                            <img src="https://placehold.co/600x400/2196F3/FFFFFF?text=Traffic+Flow" alt="交通流量分析图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                <div>
+                                    <h3 class="text-white text-xl font-semibold mb-2">交通流量分析图</h3>
+                                    <p class="text-white/80 text-sm">基于GPS轨迹数据，分析城市交通模式。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold text-dark">交通流量分析图</h3>
+                                <span class="px-3 py-1 bg-secondary/20 text-secondary text-xs rounded-full font-medium">数据分析</span>
+                            </div>
+                            <p class="text-gray-text text-sm mb-4 leading-relaxed">通过聚合和可视化海量GPS轨迹数据，识别城市交通拥堵热点和高峰时段，辅助智能交通管理。</p>
+                            <a href="#" class="inline-flex items-center text-primary font-medium hover:underline text-base">
+                                了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目卡片 5 -->
+                    <div class="project-card group bg-white rounded-2xl overflow-hidden shadow-custom-light hover:shadow-custom-hover transition-all duration-300 transform hover:-translate-y-2" data-category="map">
+                        <div class="relative h-60 overflow-hidden">
+                            <img src="https://placehold.co/600x400/E91E63/FFFFFF?text=Terrain+Render" alt="山脉地形渲染图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                <div>
+                                    <h3 class="text-white text-xl font-semibold mb-2">山脉地形渲染图</h3>
+                                    <p class="text-white/80 text-sm">艺术化DEM数据渲染，展现自然风貌。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold text-dark">山脉地形渲染图</h3>
+                                <span class="px-3 py-1 bg-blue-100 text-blue-800 text-xs rounded-full font-medium">地图绘制</span>
+                            </div>
+                            <p class="text-gray-text text-sm mb-4 leading-relaxed">运用先进的渲染技术，将数字高程模型（DEM）转化为令人惊叹的山脉地形图，突出自然地貌的雄伟与细节。</p>
+                            <a href="#" class="inline-flex items-center text-primary font-medium hover:underline text-base">
+                                了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- 项目卡片 6 -->
+                    <div class="project-card group bg-white rounded-2xl overflow-hidden shadow-custom-light hover:shadow-custom-hover transition-all duration-300 transform hover:-translate-y-2" data-category="analysis">
+                        <div class="relative h-60 overflow-hidden">
+                            <img src="https://placehold.co/600x400/8BC34A/FFFFFF?text=Environmental+Monitor" alt="环境监测分布图" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110">
+                            <div class="absolute inset-0 bg-gradient-to-t from-dark/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity flex items-end p-6">
+                                <div>
+                                    <h3 class="text-white text-xl font-semibold mb-2">环境监测分布图</h3>
+                                    <p class="text-white/80 text-sm">城市环境质量实时监测与可视化。</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-6">
+                            <div class="flex justify-between items-center mb-4">
+                                <h3 class="text-xl font-semibold text-dark">环境监测分布图</h3>
+                                <span class="px-3 py-1 bg-secondary/20 text-secondary text-xs rounded-full font-medium">数据分析</span>
+                            </div>
+                            <p class="text-gray-text text-sm mb-4 leading-relaxed">构建基于传感器网络的实时环境质量监测系统，通过地图可视化直观展示空气、噪音、水质等关键指标。</p>
+                            <a href="#" class="inline-flex items-center text-primary font-medium hover:underline text-base">
+                                了解更多 <i class="fa fa-arrow-right ml-2 text-sm"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center mt-16">
+                    <button class="px-10 py-3 bg-primary text-white font-semibold rounded-xl shadow-md hover:shadow-lg transition-all duration-300 text-lg">
+                        探索更多作品
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- 技术分享（代码示例） -->
+        <section id="tech" class="py-20 bg-light">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.8rem)] font-bold text-dark mb-4">我的<span class="text-primary">技术博客</span></h2>
+                    <p class="text-gray-text max-w-3xl mx-auto text-lg leading-relaxed">
+                        在这里，我分享地理数据处理与可视化的编程心得和实用技巧，涵盖Python、JavaScript等多种语言。
+                    </p>
+                </div>
+                
+                <!-- 代码选项卡 -->
+                <div class="bg-white rounded-2xl shadow-custom-light overflow-hidden">
+                    <div class="flex flex-wrap border-b border-gray-100">
+                        <button class="code-tab active px-6 py-4 font-semibold text-primary border-b-2 border-primary hover:bg-gray-50 transition-colors text-base" data-tab="python-mapping">
+                            Python 地图绘制
+                        </button>
+                        <button class="code-tab px-6 py-4 font-medium text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors text-base" data-tab="python-analysis">
+                            Python 数据分析
+                        </button>
+                        <button class="code-tab px-6 py-4 font-medium text-gray-700 hover:text-primary hover:bg-gray-50 transition-colors text-base" data-tab="javascript-mapping">
+                            JavaScript 地图可视化
+                        </button>
+                    </div>
+                    
+                    <div class="p-8">
+                        <!-- Python地图绘制代码 -->
+                        <div id="python-mapping" class="code-content active">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                                <h3 class="text-2xl font-semibold text-dark mb-3 sm:mb-0">使用GeoPandas绘制世界人口密度图</h3>
+                                <button class="copy-code-btn px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center text-sm font-medium">
+                                    <i class="fa fa-copy mr-2"></i> 复制代码
+                                </button>
+                            </div>
+                            <div class="bg-gray-800 text-white rounded-xl p-6 overflow-x-auto text-sm leading-relaxed">
+<pre><code>import geopandas as gpd
+import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1 import make_axes_locatable
+
+# Read geographic data
+world = gpd.read_file(gpd.datasets.get_path('naturalearth_lowres'))
+
+# Calculate population density (adjusting area unit for better scale)
+world['density'] = world['pop_est'] / world['area_sqkm'] # Assuming 'area_sqkm' exists or calculate if needed
+
+# Create figure and axes
+fig, ax = plt.subplots(1, 1, figsize=(14, 9))
+
+# Set color map and normalization
+cmap = 'YlOrRd' # Yellow-Orange-Red for density
+vmin, vmax = world['density'].min(), world['density'].max()
+
+# Plot the map
+divider = make_axes_locatable(ax)
+cax = divider.append_axes("right", size="3%", pad=0.1) # Thinner color bar
+world.plot(column='density', cmap=cmap, linewidth=0.5, ax=ax, edgecolor='0.7', legend=True, cax=cax, 
+           legend_kwds={'label': "Population Density (people/km²)", 'orientation': "vertical"})
+
+# Set title and labels
+ax.set_title('World Population Density Distribution Map', fontsize=18, color='#333')
+ax.set_xlabel('Longitude')
+ax.set_ylabel('Latitude')
+
+# Add grid lines
+ax.grid(True, linestyle=':', alpha=0.6, color='gray')
+
+# Remove axis ticks
+ax.set_xticks([])
+ax.set_yticks([])
+
+# Adjust layout
+plt.tight_layout()
+
+# Display plot
+plt.show()
+
+# Save plot (optional)
+# plt.savefig('world_population_density.png', dpi=300, bbox_inches='tight')
+</code></pre>
+                            </div>
+                            <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-5 rounded-r-lg">
+                                <h4 class="font-medium text-blue-800 mb-3 text-lg">代码说明</h4>
+                                <p class="text-blue-700 text-base leading-relaxed">
+                                    这段Python代码利用GeoPandas库读取全球地理数据，并计算各国的人口密度。通过Matplotlib，它生成了一个色彩鲜明的世界人口密度专题地图。地图通过颜色深浅直观地展示了不同区域的人口分布差异，并包含了图例、标题和网格线，提高了地图的专业性和可读性。
+                                </p>
+                            </div>
+                            <div class="mt-8">
+                                <h4 class="font-medium mb-4 text-xl">运行效果预览</h4>
+                                <div class="bg-white p-5 rounded-lg shadow-sm">
+                                    <img src="https://placehold.co/800x500/A0D0F0/000000?text=GeoPandas+Map+Example" alt="Python地理绘图示例结果" class="w-full h-auto rounded-lg border border-gray-200">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Python数据分析代码 -->
+                        <div id="python-analysis" class="code-content hidden">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                                <h3 class="text-2xl font-semibold text-dark mb-3 sm:mb-0">使用PySAL进行空间自相关分析（Moran's I）</h3>
+                                <button class="copy-code-btn px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center text-sm font-medium">
+                                    <i class="fa fa-copy mr-2"></i> 复制代码
+                                </button>
+                            </div>
+                            <div class="bg-gray-800 text-white rounded-xl p-6 overflow-x-auto text-sm leading-relaxed">
+<pre><code>import geopandas as gpd
+import pandas as pd
+import numpy as np
+import matplotlib.pyplot as plt
+from esda.moran import Moran
+from libpysal.weights import Queen, KNN
+from splot.esda import moran_scatterplot, lisa_cluster
+
+# Load data (replace 'neighborhoods.shp' with your actual data path)
+try:
+    gdf = gpd.read_file('neighborhoods.shp')
+except Exception as e:
+    print(f"Error loading shapefile: {e}. Using dummy data for demonstration.")
+    # Create dummy GeoDataFrame if file not found
+    from shapely.geometry import Point
+    data = {'id': range(5), 'median_income': np.random.rand(5) * 100000 + 30000}
+    geometry = [Point(i, i) for i in range(5)]
+    gdf = gpd.GeoDataFrame(data, geometry=geometry, crs="EPSG:4326")
+    # For dummy data, make sure it's valid for Queen weights or use KNN
+    if len(gdf) > 1:
+        # Create a simple convex hull to ensure connectivity if needed for Queen weights
+        gdf_buffered = gdf.buffer(0.01)
+        gdf = gpd.GeoDataFrame(gdf, geometry=gdf_buffered.centroid, crs="EPSG:4326")
+    print("Dummy GeoDataFrame created.")
+
+
+# Ensure consistent CRS (e.g., for area calculation or specific analysis)
+if gdf.crs is None or not gdf.crs.equals("EPSG:3857"):
+    gdf = gdf.to_crs(epsg=3857)
+    print("CRS transformed to EPSG:3857.")
+
+# Calculate area if needed (example conversion to square kilometers)
+# For real data, 'area' attribute might be directly available or calculated based on appropriate CRS
+if 'area_sqkm' not in gdf.columns:
+    gdf['area_sqkm'] = gdf.area / 1_000_000 # Convert m^2 to km^2
+    print("Area calculated.")
+
+# Create spatial weights matrix (Queen adjacency for polygons, or KNN for points)
+if gdf.geom_type.iloc[0] in ['Polygon', 'MultiPolygon']:
+    w = Queen.from_dataframe(gdf)
+    print("Queen weights created.")
+else:
+    # Fallback to KNN for point data or disconnected polygons for demonstration
+    w = KNN.from_dataframe(gdf, k=min(len(gdf)-1, 5)) # Use 5 nearest neighbors
+    print(f"KNN weights (k={min(len(gdf)-1, 5)}) created.")
+
+# Row-standardize weights
+w.transform = 'r'
+print("Weights row-standardized.")
+
+# Select variable for analysis
+variable = 'median_income'
+if variable not in gdf.columns:
+    print(f"Variable '{variable}' not found. Please ensure your data has this column.")
+    # Fallback to a dummy variable if not found
+    gdf[variable] = np.random.rand(len(gdf)) * 1000 # Dummy data
+    print(f"Dummy variable '{variable}' created.")
+
+# Calculate Moran's I index
+try:
+    moran = Moran(gdf[variable], w)
+    print(f"Moran's I value: {moran.I:.4f}")
+    print(f"Z-score: {moran.z_norm:.4f}")
+    print(f"p-value: {moran.p_norm:.4f}")
+except Exception as e:
+    print(f"Error calculating Moran's I: {e}. Check if data is suitable for spatial weights.")
+    moran = None # Ensure moran is None if calculation fails
+
+# Create Moran scatter plot
+if moran:
+    fig, ax = moran_scatterplot(moran, aspect_equal=True)
+    ax.set_title('Moran Scatter Plot', fontsize=16)
+    ax.set_xlabel(f'{variable} (Standardized)')
+    ax.set_ylabel('Spatial Lagged Value')
+    plt.tight_layout()
+    plt.show()
+
+# LISA cluster map
+if moran and moran.p_sim is not None: # Check if permutation p-values exist for LISA
+    fig, ax = plt.subplots(figsize=(10, 8))
+    lisa_cluster(moran, gdf, p=0.05, ax=ax, figsize=(10, 8)) # Use p-value for significance
+    ax.set_title('LISA Cluster Map (p < 0.05)', fontsize=16)
+    ax.set_axis_off() # Remove axis for cleaner map
+    plt.tight_layout()
+    plt.show()
+elif moran:
+    print("LISA cluster map could not be generated. Permutation p-values for Moran's I might be missing or insufficient.")
+</code></pre>
+                            </div>
+                            <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-5 rounded-r-lg">
+                                <h4 class="font-medium text-blue-800 mb-3 text-lg">代码说明</h4>
+                                <p class="text-blue-700 text-base leading-relaxed">
+                                    此代码演示了如何使用PySAL库执行空间自相关分析。它首先加载地理数据并构建空间权重矩阵，然后计算Moran's I指数以量化空间依赖性。代码进一步生成了Moran散点图和局部空间自相关（LISA）聚类图，这些图表有助于识别数据中的空间热点、冷点以及异常值，为空间模式分析提供可视化支持。
+                                </p>
+                            </div>
+                            <div class="mt-8">
+                                <h4 class="font-medium mb-4 text-xl">运行效果预览</h4>
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                    <img src="https://placehold.co/400x300/F44336/FFFFFF?text=Moran+Scatterplot" alt="Moran散点图" class="w-full h-auto rounded-lg border border-gray-200">
+                                    <img src="https://placehold.co/400x300/4CAF50/FFFFFF?text=LISA+Cluster+Map" alt="LISA聚类图" class="w-full h-auto rounded-lg border border-gray-200">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- JavaScript地图可视化代码 -->
+                        <div id="javascript-mapping" class="code-content hidden">
+                            <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+                                <h3 class="text-2xl font-semibold text-dark mb-3 sm:mb-0">使用Leaflet创建交互式网页地图</h3>
+                                <button class="copy-code-btn px-4 py-2 bg-primary/10 text-primary rounded-lg hover:bg-primary/20 transition-colors flex items-center text-sm font-medium">
+                                    <i class="fa fa-copy mr-2"></i> 复制代码
+                                </button>
+                            </div>
+                            <div class="bg-gray-800 text-white rounded-xl p-6 overflow-x-auto text-sm leading-relaxed">
+<pre><code>&lt;!DOCTYPE html&gt;
+&lt;html&gt;
+&lt;head&gt;
+    &lt;title&gt;Leaflet Interactive Map Example&lt;/title&gt;
+    &lt;meta charset="utf-8" /&gt;
+    &lt;meta name="viewport" content="width=device-width, initial-scale=1.0"&gt;
+    &lt;link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="" /&gt;
+    &lt;script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""&gt;&lt;/script&gt;
+    &lt;style&gt;
+        #map {
+            height: 600px; /* Increased height for better visibility */
+            width: 100%;
+            border-radius: 12px; /* Rounded corners for the map */
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1); /* Soft shadow */
+        }
+        /* Custom popup styling */
+        .leaflet-popup-content-wrapper {
+            border-radius: 8px;
+            padding: 10px;
+            font-family: 'Inter', sans-serif;
+        }
+        .leaflet-popup-content {
+            font-size: 14px;
+            color: #333;
+        }
+        .leaflet-popup-tip {
+            background: #fff;
+        }
+        .message-box {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease, visibility 0.3s ease;
+        }
+        .message-box.show {
+            opacity: 1;
+            visibility: visible;
+        }
+    &lt;/style&gt;
+&lt;/head&gt;
+&lt;body&gt;
+    &lt;div id="map"&gt;&lt;/div&gt;
+    &lt;div id="messageBox" class="message-box"&gt;&lt;/div&gt;
+
+    &lt;script&gt;
+        // Function to display messages (replaces alert)
+        function showMessage(message, duration = 3000) {
+            const msgBox = document.getElementById('messageBox');
+            msgBox.textContent = message;
+            msgBox.classList.add('show');
+            setTimeout(() => {
+                msgBox.classList.remove('show');
+            }, duration);
+        }
+
+        // Create map instance and set center coordinates and zoom level
+        var map = L.map('map').setView([39.9042, 116.4074], 12); // Slightly lower zoom for broader view
+
+        // Add OpenStreetMap tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&amp;copy; &lt;a href="https://www.openstreetmap.org/copyright"&gt;OpenStreetMap&lt;/a&gt; contributors'
+        }).addTo(map);
+
+        // Add custom markers with varied icons and popups
+        var marker1 = L.marker([39.9042, 116.4074], {
+            icon: L.icon({
+                iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+                shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+                shadowSize: [41, 41]
+            })
+        }).addTo(map);
+        marker1.bindPopup("&lt;b&gt;北京市中心&lt;/b&gt;&lt;br&gt;中国首都所在地&lt;br&gt;繁华的都市中心", {
+            closeButton: false,
+            autoClose: false
+        }).openPopup();
+
+        var marker2 = L.marker([39.98, 116.3]).addTo(map);
+        marker2.bindPopup("&lt;b&gt;故宫博物院&lt;/b&gt;&lt;br&gt;世界上最大的宫殿建筑群");
+
+        // Add a colorful circle
+        var circle = L.circle([39.85, 116.35], {
+            color: '#FF7D00', // Accent color
+            fillColor: '#FF7D00',
+            fillOpacity: 0.6,
+            radius: 800 // Larger radius
+        }).addTo(map);
+        circle.bindPopup("这是一个800米半径的重点关注区域");
+
+        // Add a more complex polygon representing a park or lake
+        var polygon = L.polygon([
+            [39.92, 116.38],
+            [39.93, 116.41],
+            [39.91, 116.43],
+            [39.89, 116.40]
+        ], {
+            color: '#00B42A', // Secondary color
+            fillColor: '#00B42A',
+            fillOpacity: 0.5
+        }).addTo(map);
+        polygon.bindPopup("这是一片美丽的公园区域");
+
+        // Click event on map
+        map.on('click', function(e) {
+            showMessage("你点击了地图: " + e.latlng.lat.toFixed(4) + ", " + e.latlng.lng.toFixed(4));
+        });
+
+        // Add a simple legend (manual for demonstration)
+        var legend = L.control({position: 'bottomright'});
+        legend.onAdd = function (map) {
+            var div = L.DomUtil.create('div', 'info legend');
+            div.style.backgroundColor = 'white';
+            div.style.padding = '10px';
+            div.style.borderRadius = '8px';
+            div.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+            div.innerHTML += '&lt;h4&gt;图例&lt;/h4&gt;';
+            div.innerHTML += '&lt;i style="background:#FF7D00; width:18px; height:18px; float:left; margin-right:8px; opacity:0.7; border-radius:50%;"&gt;&lt;/i&gt; &lt;span style="line-height:18px;"&gt;关注区域&lt;/span&gt;&lt;br&gt;';
+            div.innerHTML += '&lt;i style="background:#00B42A; width:18px; height:18px; float:left; margin-right:8px; opacity:0.6;"&gt;&lt;/i&gt; &lt;span style="line-height:18px;"&gt;公园区域&lt;/span&gt;&lt;br&gt;';
+            return div;
+        };
+        legend.addTo(map);
+
+    &lt;/script&gt;
+&lt;/body&gt;
+&lt;/html&gt;</code></pre>
+                            </div>
+                            <div class="mt-8 bg-blue-50 border-l-4 border-blue-400 p-5 rounded-r-lg">
+                                <h4 class="font-medium text-blue-800 mb-3 text-lg">代码说明</h4>
+                                <p class="text-blue-700 text-base leading-relaxed">
+                                    这段代码使用Leaflet JavaScript库构建了一个功能丰富的交互式网页地图。它初始化地图并设置视图中心和缩放级别，然后加载OpenStreetMap作为底图。在此基础上，代码添加了多个自定义标记点、一个圆形区域和一个多边形区域，并为它们配置了信息弹出窗口。此外，还加入了地图点击事件处理功能，并在右下角添加了一个简洁的图例，极大地提升了地图的交互性和信息呈现能力。
+                                </p>
+                            </div>
+                            <div class="mt-8">
+                                <h4 class="font-medium mb-4 text-xl">运行效果预览</h4>
+                                <div class="bg-white p-5 rounded-lg shadow-sm">
+                                    <img src="https://placehold.co/800x500/B0E0E6/000000?text=Leaflet+Map+Example" alt="Leaflet地图示例结果" class="w-full h-auto rounded-lg border border-gray-200">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- 联系我（留言板） -->
+        <section id="contact" class="py-20 bg-light-alt">
+            <div class="container mx-auto px-4">
+                <div class="text-center mb-16">
+                    <h2 class="text-[clamp(1.8rem,3vw,2.8rem)] font-bold text-dark mb-4">给我留言<span class="text-primary"> / 联系我</span></h2>
+                    <p class="text-gray-text max-w-3xl mx-auto text-lg leading-relaxed">
+                        期待听到你的声音！无论是合作机会、技术探讨还是仅仅打个招呼，都欢迎在这里留言。
+                    </p>
+                </div>
+                
+                <div class="max-w-4xl mx-auto">
+                    <div class="bg-white rounded-2xl shadow-custom-light p-8 md:p-10">
+                        <form id="message-form" class="space-y-8">
+                            <div class="grid md:grid-cols-2 gap-8">
+                                <div>
+                                    <label for="name" class="block text-sm font-semibold text-gray-700 mb-2">姓名</label>
+                                    <input type="text" id="name" name="name" class="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors outline-none" placeholder="你的姓名" required>
+                                </div>
+                                <div>
+                                    <label for="email" class="block text-sm font-semibold text-gray-700 mb-2">邮箱</label>
+                                    <input type="email" id="email" name="email" class="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors outline-none" placeholder="你的邮箱地址" required>
+                                </div>
+                            </div>
+                            <div>
+                                <label for="subject" class="block text-sm font-semibold text-gray-700 mb-2">主题</label>
+                                <input type="text" id="subject" name="subject" class="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors outline-none" placeholder="留言主题" required>
+                            </div>
+                            <div>
+                                <label for="message" class="block text-sm font-semibold text-gray-700 mb-2">留言内容</label>
+                                <textarea id="message" name="message" rows="7" class="w-full px-5 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors resize-y outline-none" placeholder="输入你的留言内容..." required></textarea>
+                            </div>
+                            <div class="flex items-center">
+                                <input type="checkbox" id="subscribe" name="subscribe" class="w-5 h-5 text-primary focus:ring-primary border-gray-300 rounded-md cursor-pointer">
+                                <label for="subscribe" class="ml-3 text-base text-gray-600">订阅我的博客更新</label>
+                            </div>
+                            <div>
+                                <button type="submit" class="w-full px-8 py-4 bg-primary text-white font-bold rounded-xl shadow-md hover:shadow-lg transform hover:-translate-y-0.5 transition-all duration-300 text-lg">
+                                    发送留言
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    
+                    <div class="mt-16">
+                        <h3 class="text-2xl font-semibold text-dark mb-8 text-center">最新访客留言</h3>
+                        
+                        <div id="messages-container" class="space-y-8">
+                            <!-- 留言1 -->
+                            <div class="bg-white rounded-2xl shadow-custom-light p-7">
+                                <div class="flex justify-between items-start mb-5">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                                            <i class="fa fa-user text-primary text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-dark text-lg">张三</h4>
+                                            <p class="text-sm text-gray-500">2025年6月20日</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-3.5 py-1.5 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">已回复</span>
+                                </div>
+                                <p class="text-gray-text mb-5 leading-relaxed text-base">
+                                    你的地理数据分析项目非常棒！我特别喜欢你做的全球气候变化趋势图，
+                                    请问你是使用什么数据源制作的呢？是否可以分享一下数据处理的过程？
+                                </p>
+                                <div class="bg-light-alt p-5 rounded-xl border-l-4 border-primary">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                                            <i class="fa fa-reply text-primary text-base"></i>
+                                        </div>
+                                        <h5 class="font-bold text-dark text-base">作者回复</h5>
+                                    </div>
+                                    <p class="text-gray-text text-sm leading-relaxed">
+                                        感谢你的支持！这个项目使用的是NOAA提供的全球气温数据集，数据处理过程主要包括数据清洗、时空插值和趋势分析等步骤。
+                                        我计划在下一篇博客文章中详细介绍这个过程，请保持关注。
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- 留言2 -->
+                            <div class="bg-white rounded-2xl shadow-custom-light p-7">
+                                <div class="flex justify-between items-start mb-5">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                                            <i class="fa fa-user text-primary text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-dark text-lg">李四</h4>
+                                            <p class="text-sm text-gray-500">2025年6月15日</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-3.5 py-1.5 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">已回复</span>
+                                </div>
+                                <p class="text-gray-text mb-5 leading-relaxed text-base">
+                                    我是一名GIS初学者，想学习地理数据可视化。你分享的Python代码对我很有帮助，
+                                    请问有没有适合入门的教程推荐？特别是关于GeoPandas和Matplotlib的使用。
+                                </p>
+                                <div class="bg-light-alt p-5 rounded-xl border-l-4 border-primary">
+                                    <div class="flex items-center mb-3">
+                                        <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                                            <i class="fa fa-reply text-primary text-base"></i>
+                                        </div>
+                                        <h5 class="font-bold text-dark text-base">作者回复</h5>
+                                    </div>
+                                    <p class="text-gray-text text-sm leading-relaxed">
+                                        很高兴听到我的代码对你有帮助！对于初学者，我推荐阅读《Python地理数据分析》这本书，
+                                        它详细介绍了GeoPandas和Matplotlib在地理数据处理和可视化中的应用。
+                                        此外，GeoPandas官方文档和Matplotlib官方教程也是很好的学习资源。
+                                    </p>
+                                </div>
+                            </div>
+                            
+                            <!-- 留言3 -->
+                            <div class="bg-white rounded-2xl shadow-custom-light p-7">
+                                <div class="flex justify-between items-start mb-5">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                                            <i class="fa fa-user text-primary text-xl"></i>
+                                        </div>
+                                        <div>
+                                            <h4 class="font-bold text-dark text-lg">王五</h4>
+                                            <p class="text-sm text-gray-500">2025年6月10日</p>
+                                        </div>
+                                    </div>
+                                    <span class="px-3.5 py-1.5 bg-gray-100 text-gray-800 text-xs rounded-full font-semibold">待回复</span>
+                                </div>
+                                <p class="text-gray-text leading-relaxed text-base">
+                                    你的API服务看起来很有意思，我想了解一下使用这些API是否需要付费？
+                                    如果需要，价格是如何计算的？是否提供免费试用？
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="text-center mt-12">
+                            <button id="load-more-messages" class="px-8 py-3 bg-white border border-gray-300 text-gray-700 font-medium rounded-xl shadow-sm hover:bg-gray-100 transition-colors text-base">
+                                加载更多留言
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="bg-dark text-white pt-16 pb-8">
+        <div class="container mx-auto px-4">
+            <div class="grid md:grid-cols-4 gap-10 mb-12">
+                <div>
+                    <div class="flex items-center space-x-3 mb-6">
+                        <div class="w-11 h-11 rounded-full bg-white flex items-center justify-center shadow-md">
+                            <i class="fa fa-map-o text-primary text-2xl"></i>
+                        </div>
+                        <span class="text-2xl font-bold">GeoArt Blog</span>
+                    </div>
+                    <p class="text-gray-400 mb-6 leading-relaxed text-sm">
+                        探索地理数据的艺术之美，用代码和数据讲述地球的独特故事，创造兼具美感和洞察力的地理信息作品。
+                    </p>
+                    <div class="flex space-x-4">
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-github text-white text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-twitter text-white text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-linkedin text-white text-lg"></i>
+                        </a>
+                        <a href="#" class="w-10 h-10 rounded-full bg-gray-800 flex items-center justify-center hover:bg-primary transition-colors duration-300">
+                            <i class="fa fa-wechat text-white text-lg"></i> <!-- 微信图标 -->
+                        </a>
+                    </div>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold mb-6">快速链接</h3>
+                    <ul class="space-y-3">
+                        <li><a href="#home" class="text-gray-400 hover:text-white transition-colors text-base">首页</a></li>
+                        <li><a href="#about" class="text-gray-400 hover:text-white transition-colors text-base">关于我</a></li>
+                        <li><a href="#projects" class="text-gray-400 hover:text-white transition-colors text-base">我的作品</a></li>
+                        <li><a href="#tech" class="text-gray-400 hover:text-white transition-colors text-base">技术分享</a></li>
+                        <li><a href="#contact" class="text-gray-400 hover:text-white transition-colors text-base">联系我</a></li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold mb-6">联系方式</h3>
+                    <ul class="space-y-3">
+                        <li class="flex items-center">
+                            <i class="fa fa-envelope-o text-primary mr-3 text-base"></i>
+                            <span class="text-gray-400 text-base">your.email@example.com</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-phone text-primary mr-3 text-base"></i>
+                            <span class="text-gray-400 text-base">+86 138 0000 0000</span>
+                        </li>
+                        <li class="flex items-center">
+                            <i class="fa fa-map-marker text-primary mr-3 text-base"></i>
+                            <span class="text-gray-400 text-base">中国某城市，某区</span>
+                        </li>
+                    </ul>
+                </div>
+                
+                <div>
+                    <h3 class="text-xl font-semibold mb-6">订阅我的博客</h3>
+                    <p class="text-gray-400 mb-4 leading-relaxed text-sm">
+                        订阅我的博客，第一时间获取最新的地理数据可视化和分析教程。
+                    </p>
+                    <form class="space-y-4">
+                        <input type="email" placeholder="你的邮箱地址" class="w-full px-5 py-3 bg-gray-700 text-white border border-gray-600 rounded-xl focus:ring-2 focus:ring-primary focus:border-primary transition-colors outline-none">
+                        <button type="submit" class="w-full px-5 py-3 bg-primary text-white font-bold rounded-xl hover:bg-primary/90 transition-colors text-base">
+                            立即订阅
+                        </button>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="border-t border-gray-800 pt-8 mt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center">
+                    <p class="text-gray-500 text-sm mb-4 md:mb-0">
+                        &copy; 2025 GeoArt Blog. 保留所有权利。
+                    </p>
+                    <div class="flex space-x-6">
+                        <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">隐私政策</a>
+                        <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">使用条款</a>
+                        <a href="#" class="text-gray-500 hover:text-white text-sm transition-colors">Cookie政策</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- 返回顶部按钮 -->
+    <button id="back-to-top" class="fixed bottom-8 right-8 w-14 h-14 bg-primary text-white rounded-full shadow-lg flex items-center justify-center opacity-0 invisible transition-all duration-300 hover:bg-primary/90 transform hover:-translate-y-1">
+        <i class="fa fa-arrow-up text-xl"></i>
+    </button>
+    <!-- 替换alert的自定义消息框 -->
+    <div id="messageBox" class="message-box"></div>
+
+    <script>
+        // Custom message box function (replaces alert)
+        function showMessage(message, duration = 3000, type = 'success') {
+            const msgBox = document.getElementById('messageBox');
+            msgBox.textContent = message;
+            // Reset styles
+            msgBox.style.backgroundColor = '';
+            msgBox.style.color = 'white';
+
+            if (type === 'success') {
+                msgBox.style.backgroundColor = '#4CAF50'; // Green for success
+            } else if (type === 'error') {
+                msgBox.style.backgroundColor = '#F44336'; // Red for error
+            } else if (type === 'info') {
+                msgBox.style.backgroundColor = '#2196F3'; // Blue for info
+            }
+
+            msgBox.classList.add('show');
+            setTimeout(() => {
+                msgBox.classList.remove('show');
+            }, duration);
+        }
+
+        // Navbar scroll effect
+        const navbar = document.getElementById('navbar');
+        const backToTopBtn = document.getElementById('back-to-top');
+        
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 80) { // Adjust scroll threshold
+                navbar.classList.add('py-3', 'shadow-md');
+                navbar.classList.remove('py-4', 'shadow-custom-light');
+                backToTopBtn.classList.remove('opacity-0', 'invisible');
+                backToTopBtn.classList.add('opacity-100', 'visible');
+            } else {
+                navbar.classList.add('py-4', 'shadow-custom-light');
+                navbar.classList.remove('py-3', 'shadow-md');
+                backToTopBtn.classList.add('opacity-0', 'invisible');
+                backToTopBtn.classList.remove('opacity-100', 'visible');
+            }
+        });
+        
+        // Mobile menu toggle
+        const menuToggle = document.getElementById('menu-toggle');
+        const mobileMenu = document.getElementById('mobile-menu');
+        
+        menuToggle.addEventListener('click', () => {
+            mobileMenu.classList.toggle('hidden');
+        });
+        
+        // Smooth scrolling for navigation links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const targetId = this.getAttribute('href');
+                const targetElement = document.querySelector(targetId);
+                
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - (navbar.offsetHeight + 20), // Adjust offset for fixed navbar
+                        behavior: 'smooth'
+                    });
+                    
+                    // Close mobile menu if open
+                    if (!mobileMenu.classList.contains('hidden')) {
+                        mobileMenu.classList.add('hidden');
+                    }
+                }
+            });
+        });
+        
+        // Back to top button functionality
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+        
+        // Project filter functionality
+        const projectFilters = document.querySelectorAll('.project-filter');
+        const projectCards = document.querySelectorAll('.project-card');
+        
+        projectFilters.forEach(filter => {
+            filter.addEventListener('click', () => {
+                // Remove active state from all filters
+                projectFilters.forEach(f => {
+                    f.classList.remove('bg-primary', 'text-white');
+                    f.classList.add('bg-white', 'text-gray-700');
+                });
+                
+                // Add active state to current filter
+                filter.classList.remove('bg-white', 'text-gray-700');
+                filter.classList.add('bg-primary', 'text-white');
+                
+                // Get filter category
+                const filterCategory = filter.getAttribute('data-filter');
+                
+                // Filter project cards
+                projectCards.forEach(card => {
+                    const cardCategory = card.getAttribute('data-category');
+                    
+                    if (filterCategory === 'all' || filterCategory === cardCategory) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                });
+            });
+        });
+        
+        // Code tab switching
+        const codeTabs = document.querySelectorAll('.code-tab');
+        const codeContents = document.querySelectorAll('.code-content');
+        
+        codeTabs.forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active state from all tabs
+                codeTabs.forEach(t => {
+                    t.classList.remove('active', 'text-primary', 'border-b-2', 'border-primary');
+                    t.classList.add('text-gray-700');
+                });
+                
+                // Add active state to current tab
+                tab.classList.add('active', 'text-primary', 'border-b-2', 'border-primary');
+                tab.classList.remove('text-gray-700');
+                
+                // Get tab ID
+                const tabId = tab.getAttribute('data-tab');
+                
+                // Hide all content
+                codeContents.forEach(content => {
+                    content.classList.add('hidden');
+                    content.classList.remove('active');
+                });
+                
+                // Show current content
+                const currentContent = document.getElementById(tabId);
+                currentContent.classList.remove('hidden');
+                currentContent.classList.add('active');
+            });
+        });
+        
+        // Copy code button functionality
+        const copyCodeBtns = document.querySelectorAll('.copy-code-btn');
+        
+        copyCodeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Get code block content
+                const codeBlock = btn.closest('.code-content').querySelector('pre code');
+                const textToCopy = codeBlock.textContent;
+                
+                // Copy to clipboard
+                document.execCommand('copy'); // Fallback for navigator.clipboard
+                
+                // Use a temporary textarea for `document.execCommand('copy')` if navigator.clipboard fails or is not available
+                const textArea = document.createElement("textarea");
+                textArea.value = textToCopy;
+                textArea.style.position = "fixed";  // Avoid scrolling to bottom
+                textArea.style.left = "-9999px"; // Hide it
+                document.body.appendChild(textArea);
+                textArea.focus();
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showMessage('代码已复制！', 2000, 'success');
+                    const originalText = btn.innerHTML;
+                    btn.innerHTML = '<i class="fa fa-check mr-2"></i> 已复制';
+                    btn.classList.add('bg-green-100', 'text-green-700');
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.classList.remove('bg-green-100', 'text-green-700');
+                    }, 2000);
+                } catch (err) {
+                    console.error('Failed to copy: ', err);
+                    showMessage('复制失败，请手动复制！', 3000, 'error');
+                } finally {
+                    document.body.removeChild(textArea);
+                }
+            });
+        });
+        
+        // Message form submission
+        const messageForm = document.getElementById('message-form');
+        
+        messageForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            // Get form data
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const subject = document.getElementById('subject').value;
+            const message = document.getElementById('message').value;
+            const subscribe = document.getElementById('subscribe').checked;
+            
+            // Simulate sending form data (replace with actual AJAX/fetch call to your backend)
+            console.log({ name, email, subject, message, subscribe });
+            
+            showMessage('留言提交成功，感谢您的留言！', 3000, 'success');
+            
+            messageForm.reset();
+        });
+        
+        // Load more messages button
+        const loadMoreMessagesBtn = document.getElementById('load-more-messages');
+        
+        loadMoreMessagesBtn.addEventListener('click', () => {
+            // Simulate loading more messages
+            loadMoreMessagesBtn.innerHTML = '<i class="fa fa-spinner fa-spin mr-2"></i> 加载中...';
+            loadMoreMessagesBtn.disabled = true;
+            
+            setTimeout(() => {
+                // Create new message
+                const newMessage = document.createElement('div');
+                newMessage.className = 'bg-white rounded-2xl shadow-custom-light p-7';
+                newMessage.innerHTML = `
+                    <div class="flex justify-between items-start mb-5">
+                        <div class="flex items-center">
+                            <div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mr-4">
+                                <i class="fa fa-user text-primary text-xl"></i>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-dark text-lg">赵六</h4>
+                                <p class="text-sm text-gray-500">2025年6月5日</p>
+                            </div>
+                        </div>
+                        <span class="px-3.5 py-1.5 bg-blue-100 text-blue-800 text-xs rounded-full font-semibold">已回复</span>
+                    </div>
+                    <p class="text-gray-text mb-5 leading-relaxed text-base">
+                        我对你的空间预测API很感兴趣，想了解一下它的精度如何？是否可以用于商业项目？
+                    </p>
+                    <div class="bg-light-alt p-5 rounded-xl border-l-4 border-primary">
+                        <div class="flex items-center mb-3">
+                            <div class="w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center mr-3">
+                                <i class="fa fa-reply text-primary text-base"></i>
+                            </div>
+                            <h5 class="font-bold text-dark text-base">作者回复</h5>
+                        </div>
+                        <p class="text-gray-text text-sm leading-relaxed">
+                            空间预测API的精度取决于输入数据的质量和预测的时间范围。对于短期预测，精度通常在80%以上。
+                            该API可以用于商业项目，但需要根据具体使用场景选择合适的套餐。请查看API文档获取详细信息。
+                        </p>
+                    </div>
+                `;
+                
+                // Add new message
+                const messagesContainer = document.getElementById('messages-container');
+                messagesContainer.appendChild(newMessage);
+                
+                // Restore button state
+                loadMoreMessagesBtn.innerHTML = '加载更多留言';
+                loadMoreMessagesBtn.disabled = false;
+                
+                // If enough messages loaded, hide button (example: hide after 4 messages are visible)
+                if (messagesContainer.children.length >= 4) { // Assuming 3 initial + 1 loaded = 4
+                    loadMoreMessagesBtn.style.display = 'none';
+                }
+            }, 1500);
+        });
+    </script>
+</body>
+</html>
